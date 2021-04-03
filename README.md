@@ -1,6 +1,6 @@
 # geocodenominatim
 
-Geocode table with Nominatim for Israeli Ballots statistical analysis
+Geocode table with Nominatim for Israeli ballots statistical analysis
 
 ## Usage
 
