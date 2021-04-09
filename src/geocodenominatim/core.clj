@@ -1,6 +1,6 @@
 (ns geocodenominatim.core
   (:require [clj-http.client :as client]
-            [clojure.java.io :as io] [clojure.data.csv :as csv]  
+            [clojure.java.io :as io] [clojure.data.csv :as csv]
             [clojure.data.json :as json]
             [ring.util.codec :as codec])
   (:gen-class))
@@ -28,16 +28,18 @@
     (with-open [file (io/writer path)]
       (csv/write-csv file (cons headers rows)))))
 
-(defn geocode [data] 
-  
-  (let [request_url (str NOMINATIM_URL (codec/form-encode data) "&format=json")] 
-   (first (json/read-str (:body (client/get request_url {:accept :json}))))
-  ) 
-  )
+(defn geocode [data id_column]
+
+  (let [request_url (str NOMINATIM_URL (codec/form-encode (dissoc data (keyword id_column))) "&format=json")]
+    (let [response (first (json/read-str
+                           (:body
+                            (client/get request_url {:accept :json}))))]
+      (if (some? response)
+        (assoc response :id ((keyword id_column) data))
+        nil))))
 
 (defn -main
   "Geocode CSV"
-  [x y]
-  (write-csv y (remove nil? (map geocode (csv-data->maps (process-csv x)))) )
-)
+  [x y z]
+  (write-csv y (remove nil? (map (fn geocode-data [x] (geocode x z)) (csv-data->maps (process-csv x))))))
 
